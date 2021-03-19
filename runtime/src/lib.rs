@@ -262,18 +262,18 @@ parameter_types! {
 
 impl pallet_atomic_swap::Config for Runtime {
 	type Event = Event;
-	type SwapAction = pallet_gallery::GallerySwapAction<Runtime>;
+	type SwapAction = pallet_chiba::ChibaSwapAction<Runtime>;
 	type ProofLimit = ProofLimit;
 }
 
 impl orml_nft::Config for Runtime {
 	type ClassId = u64;
 	type TokenId = u64;
-	type ClassData = pallet_gallery::ClassData;
-	type TokenData = pallet_gallery::TokenData;
+	type ClassData = pallet_chiba::ClassData;
+	type TokenData = pallet_chiba::TokenData;
 }
 
-impl pallet_gallery::Config for Runtime {
+impl pallet_chiba::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 }
@@ -285,17 +285,17 @@ construct_runtime!(
 		NodeBlock = opaque::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Module, Call, Config, Storage, Event<T>},
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
-		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
-		Aura: pallet_aura::{Module, Config<T>},
-		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
-		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-		TransactionPayment: pallet_transaction_payment::{Module, Storage},
-		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
-		AtomicSwap: pallet_atomic_swap::{Module, Call, Storage, Event<T>},
-		Nft: orml_nft::{Module, Call, Storage},
-		Chiba: pallet_gallery::{Module, Call, Storage, Event<T>},
+		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Call, Storage},
+		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
+		Aura: pallet_aura::{Pallet, Config<T>},
+		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
+		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
+		AtomicSwap: pallet_atomic_swap::{Pallet, Call, Storage, Event<T>},
+		Nft: orml_nft::{Pallet, Call, Storage},
+		Chiba: pallet_chiba::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
@@ -329,7 +329,7 @@ pub type Executive = frame_executive::Executive<
 	Block,
 	frame_system::ChainContext<Runtime>,
 	Runtime,
-	AllModules,
+	AllPallets,
 >;
 
 impl_runtime_apis! {
@@ -375,7 +375,7 @@ impl_runtime_apis! {
 		}
 
 		fn random_seed() -> <Block as BlockT>::Hash {
-			RandomnessCollectiveFlip::random_seed()
+			RandomnessCollectiveFlip::random_seed().0
 		}
 	}
 
@@ -395,8 +395,8 @@ impl_runtime_apis! {
 	}
 
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
-		fn slot_duration() -> u64 {
-			Aura::slot_duration()
+		fn slot_duration() -> sp_consensus_aura::SlotDuration {
+			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
 		}
 
 		fn authorities() -> Vec<AuraId> {
